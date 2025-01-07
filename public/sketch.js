@@ -10,11 +10,9 @@ function setup() {
 function draw() {
     background(255); // White background
 
-    // Draw and flash shapes
+    // Draw shapes
     for (let shape of shapes) {
-        shape.color = color(random(255), random(255), random(255));
         fill(shape.color);
-
         if (shape.type === 'circle') {
             ellipse(shape.x, shape.y, shape.size);
         } else if (shape.type === 'rectangle') {
@@ -35,9 +33,15 @@ function draw() {
     ball.x += ball.velocity.x;
     ball.y += ball.velocity.y;
 
-    // Constrain ball to screen borders
-    ball.x = constrain(ball.x, ball.radius, width - ball.radius);
-    ball.y = constrain(ball.y, ball.radius, height - ball.radius);
+    // Constrain ball to screen borders and make it bounce
+    if (ball.x - ball.radius <= 0 || ball.x + ball.radius >= width) {
+        ball.velocity.x *= -1; // Reverse x-direction
+        ball.x = constrain(ball.x, ball.radius, width - ball.radius); // Keep within bounds
+    }
+    if (ball.y - ball.radius <= 0 || ball.y + ball.radius >= height) {
+        ball.velocity.y *= -1; // Reverse y-direction
+        ball.y = constrain(ball.y, ball.radius, height - ball.radius); // Keep within bounds
+    }
 
     // Detect collision with shapes
     for (let shape of shapes) {
@@ -93,7 +97,7 @@ function resetGame() {
             y: random(size / 2, height - size / 2),
             size: size,
             type: random(['circle', 'rectangle', 'triangle']), // Random shape type
-            color: color(random(255), random(255), random(255)),
+            color: color(random(255), random(255), random(255)), // Static random color
         });
     }
 }
