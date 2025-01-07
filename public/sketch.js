@@ -1,7 +1,6 @@
 let ball = { x: 0, y: 0, radius: 20, velocity: { x: 0, y: 0 } };
-const boxes = [];
-const boxCount = 10; // Number of boxes
-const boxPadding = 10; // Minimum distance between boxes
+const shapes = [];
+const shapeCount = 10; // Number of shapes
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -9,12 +8,27 @@ function setup() {
 }
 
 function draw() {
-    background(220);
+    background(255); // White background
 
-    // Draw boxes
-    for (let box of boxes) {
-        fill(box.color);
-        rect(box.x, box.y, box.width, box.height);
+    // Draw and flash shapes
+    for (let shape of shapes) {
+        shape.color = color(random(255), random(255), random(255));
+        fill(shape.color);
+
+        if (shape.type === 'circle') {
+            ellipse(shape.x, shape.y, shape.size);
+        } else if (shape.type === 'rectangle') {
+            rect(shape.x, shape.y, shape.size, shape.size);
+        } else if (shape.type === 'triangle') {
+            triangle(
+                shape.x,
+                shape.y - shape.size / 2,
+                shape.x - shape.size / 2,
+                shape.y + shape.size / 2,
+                shape.x + shape.size / 2,
+                shape.y + shape.size / 2
+            );
+        }
     }
 
     // Update ball position
@@ -25,10 +39,10 @@ function draw() {
     ball.x = constrain(ball.x, ball.radius, width - ball.radius);
     ball.y = constrain(ball.y, ball.radius, height - ball.radius);
 
-    // Detect collision with boxes
-    for (let box of boxes) {
-        if (isCollidingWithBox(ball, box)) {
-            handleBoxCollision(ball, box);
+    // Detect collision with shapes
+    for (let shape of shapes) {
+        if (isCollidingWithShape(ball, shape)) {
+            handleShapeCollision(ball, shape);
         }
     }
 
@@ -38,28 +52,24 @@ function draw() {
 }
 
 function mousePressed() {
-    for (let box of boxes) {
-        if (
-            mouseX > box.x &&
-            mouseX < box.x + box.width &&
-            mouseY > box.y &&
-            mouseY < box.y + box.height
-        ) {
-            // Apply force based on box color intensity
-            const force = red(box.color) / 255; // Redder = stronger push
+    for (let shape of shapes) {
+        const distance = dist(mouseX, mouseY, shape.x, shape.y);
+        if (distance < shape.size / 2) {
+            // Apply a large force to the ball
             const angle = atan2(mouseY - ball.y, mouseX - ball.x); // Direction to ball
-            ball.velocity.x += cos(angle) * force * 20; // Push horizontally
-            ball.velocity.y += sin(angle) * force * 20; // Push vertically
+            ball.velocity.x += cos(angle) * 50; // Strong push horizontally
+            ball.velocity.y += sin(angle) * 50; // Strong push vertically
         }
     }
 }
 
 function keyPressed() {
-    // Arrow key movement
-    if (keyCode === LEFT_ARROW) ball.velocity.x -= 10;
-    if (keyCode === RIGHT_ARROW) ball.velocity.x += 10;
-    if (keyCode === UP_ARROW) ball.velocity.y -= 10;
-    if (keyCode === DOWN_ARROW) ball.velocity.y += 10;
+    // Arrow key movement, ball moves 10 times faster
+    const speed = 10;
+    if (keyCode === LEFT_ARROW) ball.velocity.x -= speed;
+    if (keyCode === RIGHT_ARROW) ball.velocity.x += speed;
+    if (keyCode === UP_ARROW) ball.velocity.y -= speed;
+    if (keyCode === DOWN_ARROW) ball.velocity.y += speed;
 }
 
 // Ensure canvas adjusts when the window is resized
@@ -68,79 +78,51 @@ function windowResized() {
     resetGame();
 }
 
-// Reset the game and reposition the boxes
+// Reset the game and reposition the shapes
 function resetGame() {
     ball.x = width / 2;
     ball.y = height - 50; // Start at the bottom of the screen
     ball.velocity = { x: 0, y: 0 };
 
-    // Recreate boxes without overlap
-    boxes.length = 0;
-    while (boxes.length < boxCount) {
-        const box = {
-            x: random(50, width - 100),
-            y: random(50, height - 150),
-            width: 50,
-            height: 50,
+    // Recreate shapes
+    shapes.length = 0;
+    for (let i = 0; i < shapeCount; i++) {
+        const size = random(ball.radius * 2, ball.radius * 10); // Size between 1x and 5x the ball
+        shapes.push({
+            x: random(size / 2, width - size / 2),
+            y: random(size / 2, height - size / 2),
+            size: size,
+            type: random(['circle', 'rectangle', 'triangle']), // Random shape type
             color: color(random(255), random(255), random(255)),
-        };
-
-        // Check for overlap with existing boxes
-        if (!isOverlappingWithExistingBoxes(box)) {
-            boxes.push(box);
-        }
+        });
     }
 }
 
-// Check if a new box overlaps with any existing box
-function isOverlappingWithExistingBoxes(newBox) {
-    for (let box of boxes) {
-        if (
-            newBox.x < box.x + box.width + boxPadding &&
-            newBox.x + newBox.width + boxPadding > box.x &&
-            newBox.y < box.y + box.height + boxPadding &&
-            newBox.y + newBox.height + boxPadding > box.y
-        ) {
-            return true;
-        }
-    }
-    return false;
+// Check if the ball is colliding with a shape
+function isCollidingWithShape(ball, shape) {
+    const distance = dist(ball.x, ball.y, shape.x, shape.y);
+    return distance < ball.radius + shape.size / 2;
 }
 
-// Check if the ball is colliding with a box
-function isCollidingWithBox(ball, box) {
-    return (
-        ball.x + ball.radius > box.x &&
-        ball.x - ball.radius < box.x + box.width &&
-        ball.y + ball.radius > box.y &&
-        ball.y - ball.radius < box.y + box.height
-    );
-}
-
-// Handle collision with a box
-function handleBoxCollision(ball, box) {
-    // Determine collision side
+// Handle collision with a shape
+function handleShapeCollision(ball, shape) {
+    // Determine collision direction
     const ballCenterX = ball.x;
     const ballCenterY = ball.y;
 
-    const boxCenterX = box.x + box.width / 2;
-    const boxCenterY = box.y + box.height / 2;
+    const shapeCenterX = shape.x;
+    const shapeCenterY = shape.y;
 
-    const dx = ballCenterX - boxCenterX;
-    const dy = ballCenterY - boxCenterY;
+    const dx = ballCenterX - shapeCenterX;
+    const dy = ballCenterY - shapeCenterY;
 
-    // Reflect velocity based on collision direction
+    // Reflect velocity based on collision direction and boost speed
+    const boost = 3; // Speed boost factor
     if (abs(dx) > abs(dy)) {
         // Horizontal collision
-        ball.velocity.x *= -1;
-        ball.x = dx > 0 ? box.x + box.width + ball.radius : box.x - ball.radius;
+        ball.velocity.x = -ball.velocity.x * boost;
     } else {
         // Vertical collision
-        ball.velocity.y *= -1;
-        ball.y = dy > 0 ? box.y + box.height + ball.radius : box.y - ball.radius;
+        ball.velocity.y = -ball.velocity.y * boost;
     }
-
-    // Slightly reduce velocity after collision to simulate energy loss
-    ball.velocity.x *= 0.95;
-    ball.velocity.y *= 0.95;
 }
