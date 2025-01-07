@@ -3,6 +3,9 @@ const shapes = [];
 const shapeCount = 10; // Number of shapes
 let score = 0; // Player's score
 let notePosition = { x: 0, y: 0 }; // Position of the note
+let gameDuration = 60; // Game duration in seconds
+let timeLeft;
+let gameActive = false;
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -10,6 +13,8 @@ function setup() {
 }
 
 function draw() {
+    if (!gameActive) return; // Stop rendering if the game is not active
+
     background(255); // White background
 
     // Draw shapes
@@ -57,11 +62,18 @@ function draw() {
     fill(0);
     ellipse(ball.x, ball.y, ball.radius * 2);
 
-    // Display the score
+    // Display the score and timer
     displayScore();
+    displayTimer();
 
     // Display the note
     drawNote();
+
+    // Update the timer
+    timeLeft -= deltaTime / 1000; // Decrement time based on frame duration
+    if (timeLeft <= 0) {
+        endGame();
+    }
 }
 
 function mousePressed() {
@@ -95,6 +107,8 @@ function resetGame() {
     ball.y = height - 50; // Start at the bottom of the screen
     ball.velocity = { x: 0, y: 0 };
     score = 0; // Reset score
+    timeLeft = gameDuration; // Reset timer
+    gameActive = true; // Set game state to active
 
     // Recreate shapes without overlapping
     shapes.length = 0;
@@ -121,6 +135,59 @@ function resetGame() {
     positionNote();
 }
 
+function endGame() {
+    gameActive = false; // Stop the game
+    noLoop(); // Stop the draw loop
+
+    // Show "Game Over" and Play Again button
+    swal({
+        title: "Time's Up!",
+        text: `Your final score is ${score}.`,
+        icon: "info",
+        buttons: {
+            playAgain: {
+                text: "Play Again",
+                value: "playAgain",
+            },
+        },
+    }).then((value) => {
+        if (value === "playAgain") {
+            resetGame();
+            loop(); // Restart the draw loop
+        }
+    });
+}
+
+function displayScore() {
+    fill(0);
+    textSize(24);
+    textAlign(RIGHT, TOP);
+    text(`Score: ${score}`, width - 10, 10);
+}
+
+function displayTimer() {
+    fill(0);
+    textSize(24);
+    textAlign(RIGHT, TOP);
+    text(`Time Left: ${ceil(timeLeft)}s`, width - 10, 40);
+}
+
+function drawNote() {
+    fill(0);
+    textSize(20);
+    textAlign(LEFT, BOTTOM);
+    text("Use the arrows to move the ball", notePosition.x, notePosition.y);
+}
+
+function positionNote() {
+    let attempts = 0;
+    do {
+        notePosition.x = random(10, width - 200); // Avoid the edges
+        notePosition.y = random(height - 100, height - 10); // Bottom of the screen
+        attempts++;
+    } while (isOverlappingWithShapes(notePosition.x, notePosition.y) && attempts < 100);
+}
+
 function isOverlapping(newShape) {
     for (let shape of shapes) {
         const distance = dist(newShape.x, newShape.y, shape.x, shape.y);
@@ -129,6 +196,14 @@ function isOverlapping(newShape) {
         }
     }
     return false; // No overlap
+}
+
+function isOverlappingWithShapes(x, y) {
+    for (let shape of shapes) {
+        const distance = dist(x, y, shape.x, shape.y);
+        if (distance < shape.size / 2 + 50) return true; // Avoid overlap with shapes
+    }
+    return false;
 }
 
 function isCollidingWithShape(ball, shape) {
@@ -174,35 +249,4 @@ function handleShapeCollision(ball, shape) {
 function calculateScore(shape) {
     // Smaller shapes give 100x more points; larger shapes give fewer points
     return Math.round(10000 / shape.size);
-}
-
-function displayScore() {
-    fill(0);
-    textSize(24);
-    textAlign(RIGHT, TOP);
-    text(`Score: ${score}`, width - 10, 10);
-}
-
-function drawNote() {
-    fill(0);
-    textSize(20);
-    textAlign(LEFT, BOTTOM);
-    text("Use the arrows to move the ball", notePosition.x, notePosition.y);
-}
-
-function positionNote() {
-    let attempts = 0;
-    do {
-        notePosition.x = random(10, width - 200); // Avoid the edges
-        notePosition.y = random(height - 100, height - 10); // Bottom of the screen
-        attempts++;
-    } while (isOverlappingWithShapes(notePosition.x, notePosition.y) && attempts < 100);
-}
-
-function isOverlappingWithShapes(x, y) {
-    for (let shape of shapes) {
-        const distance = dist(x, y, shape.x, shape.y);
-        if (distance < shape.size / 2 + 50) return true; // Avoid overlap with shapes
-    }
-    return false;
 }
