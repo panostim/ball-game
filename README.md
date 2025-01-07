@@ -1,4 +1,4 @@
-# ball-game
+# ball-bounce-game
 
 A ball bounce application using the p5 JS library inspired by Pinball.
 
