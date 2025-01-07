@@ -16,6 +16,6 @@ Additional features to be considered:
 - the user can see a leaderboard with the 10 best performances
 - the game has 10 levels with pre-set positions for each obstacle (higher levels have more obstacles)
 - there is a leaderboard for each level
-- the data persist in a postgres db
+- the data persist in an external db
 - the application is responsive and has the same difficulty across devices
 - for mobile devices users can move the ball by swiping to any direction
