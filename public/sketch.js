@@ -6,8 +6,13 @@ let isGameRunning = false;
 // Landing page logic
 document.getElementById("name-form").addEventListener("submit", (e) => {
     e.preventDefault();
-    nickname = document.getElementById("nickname").value;
-    startGame();
+    nickname = document.getElementById("nickname").value.trim();
+
+    if (nickname) {
+        startGame();
+    } else {
+        alert("Please enter your name or nickname to start the game.");
+    }
 });
 
 function startGame() {
@@ -26,13 +31,7 @@ function startGame() {
             endGame();
         }
     }, 1000);
-
-    // Call resetGame after p5.js canvas is ready
-    setTimeout(() => {
-        resetGame(); // Ensure the p5.js setup has run
-    }, 100);
 }
-
 
 function endGame() {
     clearInterval(gameInterval);
@@ -73,10 +72,11 @@ document.getElementById("restart-btn").addEventListener("click", () => {
     document.getElementById("landing-page").classList.remove("hidden");
 });
 
-// Game setup and logic
 function setup() {
     const canvas = createCanvas(windowWidth, windowHeight);
     canvas.parent("game-container");
+
+    // Initialize game state
     resetGame();
 }
 
@@ -153,7 +153,6 @@ function resetGame() {
     document.getElementById("score-display").textContent = "Score: 0";
     document.getElementById("timer-display").textContent = "Time: 60s";
 }
-
 
 function isCollidingWithShape(ball, shape) {
     const distance = dist(ball.x, ball.y, shape.x, shape.y);
