@@ -53,6 +53,9 @@ function draw() {
     // Draw the ball
     fill(0);
     ellipse(ball.x, ball.y, ball.radius * 2);
+
+    // Display the note
+    drawNote();
 }
 
 function mousePressed() {
@@ -76,13 +79,11 @@ function keyPressed() {
     if (keyCode === DOWN_ARROW) ball.velocity.y += speed;
 }
 
-// Ensure canvas adjusts when the window is resized
 function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
     resetGame();
 }
 
-// Reset the game and reposition the shapes
 function resetGame() {
     ball.x = width / 2;
     ball.y = height - 50; // Start at the bottom of the screen
@@ -102,7 +103,6 @@ function resetGame() {
     }
 }
 
-// Check if the ball is colliding with a shape
 function isCollidingWithShape(ball, shape) {
     if (shape.type === 'circle') {
         const distance = dist(ball.x, ball.y, shape.x, shape.y);
@@ -115,7 +115,6 @@ function isCollidingWithShape(ball, shape) {
             ball.y - ball.radius < shape.y + shape.size
         );
     } else if (shape.type === 'triangle') {
-        // Approximate collision for triangle using bounding box
         return (
             ball.x + ball.radius > shape.x - shape.size / 2 &&
             ball.x - ball.radius < shape.x + shape.size / 2 &&
@@ -126,23 +125,28 @@ function isCollidingWithShape(ball, shape) {
     return false;
 }
 
-// Handle collision with a shape
 function handleShapeCollision(ball, shape) {
     const boost = 3; // Speed boost factor upon collision
     if (shape.type === 'circle') {
-        // Reflect velocity based on collision direction for circle
         const angle = atan2(ball.y - shape.y, ball.x - shape.x);
         ball.velocity.x = cos(angle) * ball.velocity.x * -boost;
         ball.velocity.y = sin(angle) * ball.velocity.y * -boost;
     } else {
-        // Reflect velocity for rectangles and triangles
         const dx = ball.x - (shape.x + shape.size / 2);
         const dy = ball.y - (shape.y + shape.size / 2);
 
         if (abs(dx) > abs(dy)) {
-            ball.velocity.x *= -boost; // Horizontal collision
+            ball.velocity.x *= -boost;
         } else {
-            ball.velocity.y *= -boost; // Vertical collision
+            ball.velocity.y *= -boost;
         }
     }
+}
+
+// Draw the note in the bottom-right corner
+function drawNote() {
+    fill(0);
+    textSize(16);
+    textAlign(RIGHT, BOTTOM);
+    text("Use the arrows to move the ball", width - 10, height - 10);
 }
