@@ -33,13 +33,13 @@ function draw() {
     ball.x += ball.velocity.x;
     ball.y += ball.velocity.y;
 
-    // Constrain ball to screen borders and make it bounce
+    // Constrain ball to screen borders and make it bounce with reduced speed
     if (ball.x - ball.radius <= 0 || ball.x + ball.radius >= width) {
-        ball.velocity.x *= -1; // Reverse x-direction
+        ball.velocity.x *= -0.5; // Reverse x-direction with reduced speed
         ball.x = constrain(ball.x, ball.radius, width - ball.radius); // Keep within bounds
     }
     if (ball.y - ball.radius <= 0 || ball.y + ball.radius >= height) {
-        ball.velocity.y *= -1; // Reverse y-direction
+        ball.velocity.y *= -0.5; // Reverse y-direction with reduced speed
         ball.y = constrain(ball.y, ball.radius, height - ball.radius); // Keep within bounds
     }
 
@@ -104,29 +104,45 @@ function resetGame() {
 
 // Check if the ball is colliding with a shape
 function isCollidingWithShape(ball, shape) {
-    const distance = dist(ball.x, ball.y, shape.x, shape.y);
-    return distance < ball.radius + shape.size / 2;
+    if (shape.type === 'circle') {
+        const distance = dist(ball.x, ball.y, shape.x, shape.y);
+        return distance < ball.radius + shape.size / 2;
+    } else if (shape.type === 'rectangle') {
+        return (
+            ball.x + ball.radius > shape.x &&
+            ball.x - ball.radius < shape.x + shape.size &&
+            ball.y + ball.radius > shape.y &&
+            ball.y - ball.radius < shape.y + shape.size
+        );
+    } else if (shape.type === 'triangle') {
+        // Approximate collision for triangle using bounding box
+        return (
+            ball.x + ball.radius > shape.x - shape.size / 2 &&
+            ball.x - ball.radius < shape.x + shape.size / 2 &&
+            ball.y + ball.radius > shape.y - shape.size / 2 &&
+            ball.y - ball.radius < shape.y + shape.size / 2
+        );
+    }
+    return false;
 }
 
 // Handle collision with a shape
 function handleShapeCollision(ball, shape) {
-    // Determine collision direction
-    const ballCenterX = ball.x;
-    const ballCenterY = ball.y;
-
-    const shapeCenterX = shape.x;
-    const shapeCenterY = shape.y;
-
-    const dx = ballCenterX - shapeCenterX;
-    const dy = ballCenterY - shapeCenterY;
-
-    // Reflect velocity based on collision direction and boost speed
-    const boost = 3; // Speed boost factor
-    if (abs(dx) > abs(dy)) {
-        // Horizontal collision
-        ball.velocity.x = -ball.velocity.x * boost;
+    const boost = 3; // Speed boost factor upon collision
+    if (shape.type === 'circle') {
+        // Reflect velocity based on collision direction for circle
+        const angle = atan2(ball.y - shape.y, ball.x - shape.x);
+        ball.velocity.x = cos(angle) * ball.velocity.x * -boost;
+        ball.velocity.y = sin(angle) * ball.velocity.y * -boost;
     } else {
-        // Vertical collision
-        ball.velocity.y = -ball.velocity.y * boost;
+        // Reflect velocity for rectangles and triangles
+        const dx = ball.x - (shape.x + shape.size / 2);
+        const dy = ball.y - (shape.y + shape.size / 2);
+
+        if (abs(dx) > abs(dy)) {
+            ball.velocity.x *= -boost; // Horizontal collision
+        } else {
+            ball.velocity.y *= -boost; // Vertical collision
+        }
     }
 }
