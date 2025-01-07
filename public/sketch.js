@@ -134,7 +134,7 @@ function isOverlapping(newShape) {
 function isCollidingWithShape(ball, shape) {
     if (shape.type === 'circle') {
         const distance = dist(ball.x, ball.y, shape.x, shape.y);
-        return distance < ball.radius + shape.size;
+        return distance < ball.radius + shape.size / 2;
     } else if (shape.type === 'rectangle') {
         return (
             ball.x + ball.radius > shape.x &&
@@ -144,10 +144,10 @@ function isCollidingWithShape(ball, shape) {
         );
     } else if (shape.type === 'triangle') {
         return (
-            ball.x + ball.radius > shape.x - shape.size &&
-            ball.x - ball.radius < shape.x + shape.size &&
-            ball.y + ball.radius > shape.y - shape.size &&
-            ball.y - ball.radius < shape.y + shape.size
+            ball.x + ball.radius > shape.x - shape.size / 2 &&
+            ball.x - ball.radius < shape.x + shape.size / 2 &&
+            ball.y + ball.radius > shape.y - shape.size / 2 &&
+            ball.y - ball.radius < shape.y + shape.size / 2
         );
     }
     return false;
@@ -160,8 +160,8 @@ function handleShapeCollision(ball, shape) {
         ball.velocity.x = cos(angle) * ball.velocity.x * -boost;
         ball.velocity.y = sin(angle) * ball.velocity.y * -boost;
     } else {
-        const dx = ball.x - (shape.x + shape.size / 2);
-        const dy = ball.y - (shape.y + shape.size / 2);
+        const dx = ball.x - (shape.x + shape.size);
+        const dy = ball.y - (shape.y + shape.size);
 
         if (abs(dx) > abs(dy)) {
             ball.velocity.x *= -boost;
