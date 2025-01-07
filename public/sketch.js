@@ -89,17 +89,25 @@ function resetGame() {
     ball.y = height - 50; // Start at the bottom of the screen
     ball.velocity = { x: 0, y: 0 };
 
-    // Recreate shapes
+    // Recreate shapes without overlapping
     shapes.length = 0;
     for (let i = 0; i < shapeCount; i++) {
-        const size = random(ball.radius * 2, ball.radius * 10); // Size between 1x and 5x the ball
-        shapes.push({
-            x: random(size / 2, width - size / 2),
-            y: random(size / 2, height - size / 2),
-            size: size,
-            type: random(['circle', 'rectangle', 'triangle']), // Random shape type
-            color: color(random(255), random(255), random(255)), // Static random color
-        });
+        let newShape;
+        let attempts = 0; // Limit the number of attempts to avoid infinite loops
+
+        do {
+            const size = random(ball.radius * 2, ball.radius * 10); // Size between 1x and 5x the ball
+            newShape = {
+                x: random(size / 2, width - size / 2),
+                y: random(size / 2, height - size / 2),
+                size: size,
+                type: random(['circle', 'rectangle', 'triangle']), // Random shape type
+                color: color(random(255), random(255), random(255)), // Static random color
+            };
+            attempts++;
+        } while (isOverlapping(newShape) && attempts < 100);
+
+        shapes.push(newShape);
     }
 }
 
@@ -149,4 +157,15 @@ function drawNote() {
     textSize(16);
     textAlign(RIGHT, BOTTOM);
     text("Use the arrows to move the ball", width - 10, height - 10);
+}
+
+// Check if a new shape overlaps with any existing shape
+function isOverlapping(newShape) {
+    for (let shape of shapes) {
+        const distance = dist(newShape.x, newShape.y, shape.x, shape.y);
+        if (distance < (newShape.size + shape.size) / 2) {
+            return true; // Overlapping detected
+        }
+    }
+    return false; // No overlap
 }
