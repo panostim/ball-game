@@ -1,3 +1,6 @@
 # ball-game
 
-This is an application with a ball game using Javascript.
+A ball game application using the p5 JS library.
+
+You can access the app in:
+https://js-ball-game.vercel.app/
