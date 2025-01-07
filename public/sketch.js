@@ -1,6 +1,8 @@
 let ball = { x: 0, y: 0, radius: 20, velocity: { x: 0, y: 0 } };
 const shapes = [];
 const shapeCount = 10; // Number of shapes
+let score = 0; // Player's score
+let notePosition = { x: 0, y: 0 }; // Position of the note
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -44,15 +46,20 @@ function draw() {
     }
 
     // Detect collision with shapes
-    for (let shape of shapes) {
-        if (isCollidingWithShape(ball, shape)) {
-            handleShapeCollision(ball, shape);
+    for (let i = shapes.length - 1; i >= 0; i--) {
+        if (isCollidingWithShape(ball, shapes[i])) {
+            handleShapeCollision(ball, shapes[i]);
+            score += calculateScore(shapes[i]); // Update score based on shape size
+            shapes.splice(i, 1); // Remove the shape after collision
         }
     }
 
     // Draw the ball
     fill(0);
     ellipse(ball.x, ball.y, ball.radius * 2);
+
+    // Display the score
+    displayScore();
 
     // Display the note
     drawNote();
@@ -88,6 +95,7 @@ function resetGame() {
     ball.x = width / 2;
     ball.y = height - 50; // Start at the bottom of the screen
     ball.velocity = { x: 0, y: 0 };
+    score = 0; // Reset score
 
     // Recreate shapes without overlapping
     shapes.length = 0;
@@ -109,6 +117,19 @@ function resetGame() {
 
         shapes.push(newShape);
     }
+
+    // Place the note in a safe position
+    positionNote();
+}
+
+function isOverlapping(newShape) {
+    for (let shape of shapes) {
+        const distance = dist(newShape.x, newShape.y, shape.x, shape.y);
+        if (distance < (newShape.size + shape.size) / 2) {
+            return true; // Overlapping detected
+        }
+    }
+    return false; // No overlap
 }
 
 function isCollidingWithShape(ball, shape) {
@@ -151,21 +172,38 @@ function handleShapeCollision(ball, shape) {
     }
 }
 
-// Draw the note in the bottom-right corner
-function drawNote() {
-    fill(0);
-    textSize(16);
-    textAlign(RIGHT, BOTTOM);
-    text("Use the arrows to move the ball", width - 10, height - 10);
+function calculateScore(shape) {
+    // Smaller shapes give more points; larger shapes give fewer points
+    return Math.round(100 / shape.size);
 }
 
-// Check if a new shape overlaps with any existing shape
-function isOverlapping(newShape) {
+function displayScore() {
+    fill(0);
+    textSize(24);
+    textAlign(RIGHT, TOP);
+    text(`Score: ${score}`, width - 10, 10);
+}
+
+function drawNote() {
+    fill(0);
+    textSize(20);
+    textAlign(LEFT, BOTTOM);
+    text("Use the arrows to move the ball", notePosition.x, notePosition.y);
+}
+
+function positionNote() {
+    let attempts = 0;
+    do {
+        notePosition.x = random(10, width - 200); // Avoid the edges
+        notePosition.y = random(height - 100, height - 10); // Bottom of the screen
+        attempts++;
+    } while (isOverlappingWithShapes(notePosition.x, notePosition.y) && attempts < 100);
+}
+
+function isOverlappingWithShapes(x, y) {
     for (let shape of shapes) {
-        const distance = dist(newShape.x, newShape.y, shape.x, shape.y);
-        if (distance < (newShape.size + shape.size) / 2) {
-            return true; // Overlapping detected
-        }
+        const distance = dist(x, y, shape.x, shape.y);
+        if (distance < shape.size / 2 + 50) return true; // Avoid overlap with shapes
     }
-    return false; // No overlap
+    return false;
 }
