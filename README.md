@@ -14,6 +14,7 @@ Additional features to be considered:
 - the user is suggested to play again and their score is displayed
 - the user provides a nick when entering
 - the user can see a leaderboard with the 10 best performances
-- the game has 10 levels with pre-saved positions for each obstacle
+- the game has 10 levels with pre-set positions for each obstacle
 - there is a leaderboard for each level
 - the data persist in a postgres db
+- the application is responsive and has the same difficulty across devices
