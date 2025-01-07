@@ -46,11 +46,10 @@ function draw() {
     }
 
     // Detect collision with shapes
-    for (let i = shapes.length - 1; i >= 0; i--) {
-        if (isCollidingWithShape(ball, shapes[i])) {
-            handleShapeCollision(ball, shapes[i]);
-            score += calculateScore(shapes[i]); // Update score based on shape size
-            shapes.splice(i, 1); // Remove the shape after collision
+    for (let shape of shapes) {
+        if (isCollidingWithShape(ball, shape)) {
+            handleShapeCollision(ball, shape);
+            score += calculateScore(shape); // Update score based on shape size
         }
     }
 
@@ -173,8 +172,8 @@ function handleShapeCollision(ball, shape) {
 }
 
 function calculateScore(shape) {
-    // Smaller shapes give more points; larger shapes give fewer points
-    return Math.round(100 / shape.size);
+    // Smaller shapes give 100x more points; larger shapes give fewer points
+    return Math.round(10000 / shape.size);
 }
 
 function displayScore() {
