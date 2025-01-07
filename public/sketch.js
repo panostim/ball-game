@@ -134,41 +134,28 @@ function isOverlapping(newShape) {
 function isCollidingWithShape(ball, shape) {
     if (shape.type === 'circle') {
         const distance = dist(ball.x, ball.y, shape.x, shape.y);
-        return distance < ball.radius + shape.size / 2;
+        return distance <= ball.radius + shape.size / 2; // Check against edge of the circle
     } else if (shape.type === 'rectangle') {
         return (
-            ball.x + ball.radius > shape.x &&
-            ball.x - ball.radius < shape.x + shape.size &&
-            ball.y + ball.radius > shape.y &&
-            ball.y - ball.radius < shape.y + shape.size
+            ball.x + ball.radius >= shape.x &&
+            ball.x - ball.radius <= shape.x + shape.size &&
+            ball.y + ball.radius >= shape.y &&
+            ball.y - ball.radius <= shape.y + shape.size
         );
     } else if (shape.type === 'triangle') {
-        return (
-            ball.x + ball.radius > shape.x - shape.size / 2 &&
-            ball.x - ball.radius < shape.x + shape.size / 2 &&
-            ball.y + ball.radius > shape.y - shape.size / 2 &&
-            ball.y - ball.radius < shape.y + shape.size / 2
-        );
+        // Approximate collision for triangle by bounding circle
+        const triangleRadius = shape.size * 0.5; // Approximation
+        const distance = dist(ball.x, ball.y, shape.x, shape.y);
+        return distance <= ball.radius + triangleRadius;
     }
     return false;
 }
 
 function handleShapeCollision(ball, shape) {
     const boost = 3; // Speed boost factor upon collision
-    if (shape.type === 'circle') {
-        const angle = atan2(ball.y - shape.y, ball.x - shape.x);
-        ball.velocity.x = cos(angle) * ball.velocity.x * -boost;
-        ball.velocity.y = sin(angle) * ball.velocity.y * -boost;
-    } else {
-        const dx = ball.x - (shape.x + shape.size / 2);
-        const dy = ball.y - (shape.y + shape.size / 2);
-
-        if (abs(dx) > abs(dy)) {
-            ball.velocity.x *= -boost;
-        } else {
-            ball.velocity.y *= -boost;
-        }
-    }
+    const angle = atan2(ball.y - shape.y, ball.x - shape.x);
+    ball.velocity.x = cos(angle) * ball.velocity.x * -boost;
+    ball.velocity.y = sin(angle) * ball.velocity.y * -boost;
 }
 
 function calculateScore(shape) {
