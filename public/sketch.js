@@ -160,8 +160,8 @@ function handleShapeCollision(ball, shape) {
         ball.velocity.x = cos(angle) * ball.velocity.x * -boost;
         ball.velocity.y = sin(angle) * ball.velocity.y * -boost;
     } else {
-        const dx = ball.x - (shape.x + shape.size);
-        const dy = ball.y - (shape.y + shape.size);
+        const dx = ball.x - (shape.x + shape.size / 2);
+        const dy = ball.y - (shape.y + shape.size / 2);
 
         if (abs(dx) > abs(dy)) {
             ball.velocity.x *= -boost;
