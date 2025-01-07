@@ -3,10 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ball Movement Game</title>
-    <script src="p5.min.js"></script>
-    <script src="sketch.js"></script>
+    <title>Ball Game</title>
+    <style>
+        /* General Body Styling */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Game Over Screen */
+        #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            text-align: center;
+            border: 2px solid #000;
+            z-index: 10;
+            display: none;
+        }
+
+        #game-over h1 {
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        #game-over p {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        #play-again {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 4px;
+        }
+
+        #play-again:hover {
+            background-color: #0056b3;
+        }
+
+        /* Canvas Styling */
+        canvas {
+            display: block;
+            margin: auto;
+            background-color: #f0f0f0;
+        }
+    </style>
+    <script src="sketch.js" defer></script>
 </head>
 <body>
+    <!-- Game Canvas (Created by p5.js) -->
+    
+    <!-- Game Over Screen -->
+    <div id="game-over">
+        <h1>Time's Up!</h1>
+        <p>Your final score is <span id="final-score"></span>.</p>
+        <button id="play-again">Play Again</button>
+    </div>
 </body>
 </html>
