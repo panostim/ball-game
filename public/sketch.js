@@ -133,30 +133,29 @@ function resetGame() {
 
     // Place the note in a safe position
     positionNote();
+
+    // Hide the Game Over screen if it's visible
+    const gameOverDiv = document.getElementById('game-over');
+    if (gameOverDiv) {
+        gameOverDiv.style.display = 'none';
+    }
+
+    loop(); // Restart the draw loop
 }
 
 function endGame() {
     gameActive = false; // Stop the game
     noLoop(); // Stop the draw loop
 
-    // Show "Game Over" and Play Again button
-    swal({
-        title: "Time's Up!",
-        text: `Your final score is ${score}.`,
-        icon: "info",
-        buttons: {
-            playAgain: {
-                text: "Play Again",
-                value: "playAgain",
-            },
-        },
-    }).then((value) => {
-        if (value === "playAgain") {
-            resetGame();
-            loop(); // Restart the draw loop
-        }
-    });
+    // Display the Game Over screen
+    document.getElementById('final-score').textContent = score;
+    document.getElementById('game-over').style.display = 'block';
 }
+
+// Add event listener for the "Play Again" button
+document.getElementById('play-again').addEventListener('click', () => {
+    resetGame();
+});
 
 function displayScore() {
     fill(0);
