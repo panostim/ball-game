@@ -14,11 +14,9 @@ function startGame() {
     document.getElementById("landing-page").classList.add("hidden");
     document.getElementById("game-container").classList.remove("hidden");
 
-    // Initialize game state
-    resetGame();
     isGameRunning = true;
 
-    // Start game timer
+    // Start the game timer
     gameTimer = 60; // Game duration in seconds
     gameInterval = setInterval(() => {
         gameTimer--;
@@ -28,7 +26,13 @@ function startGame() {
             endGame();
         }
     }, 1000);
+
+    // Call resetGame after p5.js canvas is ready
+    setTimeout(() => {
+        resetGame(); // Ensure the p5.js setup has run
+    }, 100);
 }
+
 
 function endGame() {
     clearInterval(gameInterval);
