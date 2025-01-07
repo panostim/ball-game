@@ -154,6 +154,7 @@ function resetGame() {
     document.getElementById("timer-display").textContent = "Time: 60s";
 }
 
+
 function isCollidingWithShape(ball, shape) {
     const distance = dist(ball.x, ball.y, shape.x, shape.y);
     return distance < ball.radius + shape.size / 2;
