@@ -1,25 +1,94 @@
-let ball = { x: 0, y: 0, radius: 20, velocity: { x: 0, y: 0 } };
-const shapes = [];
-const shapeCount = 10; // Number of shapes
-let score = 0; // Player's score
-let notePosition = { x: 0, y: 0 }; // Position of the note
+let ball, shapes, shapeCount, score, gameTimer;
+let nickname = "";
+let gameInterval;
+let isGameRunning = false;
 
+// Landing page logic
+document.getElementById("name-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    nickname = document.getElementById("nickname").value;
+    startGame();
+});
+
+function startGame() {
+    document.getElementById("landing-page").classList.add("hidden");
+    document.getElementById("game-container").classList.remove("hidden");
+
+    // Initialize game state
+    resetGame();
+    isGameRunning = true;
+
+    // Start game timer
+    gameTimer = 60; // Game duration in seconds
+    gameInterval = setInterval(() => {
+        gameTimer--;
+        document.getElementById("timer-display").textContent = `Time: ${gameTimer}s`;
+
+        if (gameTimer <= 0) {
+            endGame();
+        }
+    }, 1000);
+}
+
+function endGame() {
+    clearInterval(gameInterval);
+    isGameRunning = false;
+
+    // Submit the player's score to the server
+    fetch("/server/leaderboard", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nickname, score }),
+    })
+        .then(() => fetchLeaderboard())
+        .catch(console.error);
+
+    // Switch to the leaderboard view
+    document.getElementById("game-container").classList.add("hidden");
+    document.getElementById("leaderboard-container").classList.remove("hidden");
+}
+
+// Fetch and display the leaderboard
+function fetchLeaderboard() {
+    fetch("/server/leaderboard")
+        .then((res) => res.json())
+        .then((data) => {
+            const leaderboard = document.getElementById("leaderboard");
+            leaderboard.innerHTML = ""; // Clear previous leaderboard
+            data.forEach((entry, index) => {
+                const listItem = document.createElement("li");
+                listItem.textContent = `${index + 1}. ${entry.nickname} - ${entry.score}`;
+                leaderboard.appendChild(listItem);
+            });
+        });
+}
+
+// Restart button logic
+document.getElementById("restart-btn").addEventListener("click", () => {
+    document.getElementById("leaderboard-container").classList.add("hidden");
+    document.getElementById("landing-page").classList.remove("hidden");
+});
+
+// Game setup and logic
 function setup() {
-    createCanvas(windowWidth, windowHeight);
+    const canvas = createCanvas(windowWidth, windowHeight);
+    canvas.parent("game-container");
     resetGame();
 }
 
 function draw() {
-    background(255); // White background
+    if (!isGameRunning) return; // Stop rendering when the game is not running
+
+    background(255);
 
     // Draw shapes
     for (let shape of shapes) {
         fill(shape.color);
-        if (shape.type === 'circle') {
+        if (shape.type === "circle") {
             ellipse(shape.x, shape.y, shape.size);
-        } else if (shape.type === 'rectangle') {
+        } else if (shape.type === "rectangle") {
             rect(shape.x, shape.y, shape.size, shape.size);
-        } else if (shape.type === 'triangle') {
+        } else if (shape.type === "triangle") {
             triangle(
                 shape.x,
                 shape.y - shape.size / 2,
@@ -35,174 +104,62 @@ function draw() {
     ball.x += ball.velocity.x;
     ball.y += ball.velocity.y;
 
-    // Constrain ball to screen borders and make it bounce with reduced speed
+    // Bounce on borders
     if (ball.x - ball.radius <= 0 || ball.x + ball.radius >= width) {
-        ball.velocity.x *= -0.5; // Reverse x-direction with reduced speed
-        ball.x = constrain(ball.x, ball.radius, width - ball.radius); // Keep within bounds
+        ball.velocity.x *= -1; // Reverse horizontal direction
+        ball.x = constrain(ball.x, ball.radius, width - ball.radius);
     }
     if (ball.y - ball.radius <= 0 || ball.y + ball.radius >= height) {
-        ball.velocity.y *= -0.5; // Reverse y-direction with reduced speed
-        ball.y = constrain(ball.y, ball.radius, height - ball.radius); // Keep within bounds
+        ball.velocity.y *= -1; // Reverse vertical direction
+        ball.y = constrain(ball.y, ball.radius, height - ball.radius);
     }
 
-    // Detect collision with shapes
+    // Detect collisions and update score
     for (let shape of shapes) {
         if (isCollidingWithShape(ball, shape)) {
             handleShapeCollision(ball, shape);
-            score += calculateScore(shape); // Update score based on shape size
+            score += calculateScore(shape);
+            document.getElementById("score-display").textContent = `Score: ${score}`;
         }
     }
 
-    // Draw the ball
+    // Draw ball
     fill(0);
     ellipse(ball.x, ball.y, ball.radius * 2);
-
-    // Display the score
-    displayScore();
-
-    // Display the note
-    drawNote();
-}
-
-function mousePressed() {
-    for (let shape of shapes) {
-        const distance = dist(mouseX, mouseY, shape.x, shape.y);
-        if (distance < shape.size / 2) {
-            // Apply a large force to the ball
-            const angle = atan2(mouseY - ball.y, mouseX - ball.x); // Direction to ball
-            ball.velocity.x += cos(angle) * 50; // Strong push horizontally
-            ball.velocity.y += sin(angle) * 50; // Strong push vertically
-        }
-    }
-}
-
-function keyPressed() {
-    // Arrow key movement, ball moves 10 times faster
-    const speed = 10;
-    if (keyCode === LEFT_ARROW) ball.velocity.x -= speed;
-    if (keyCode === RIGHT_ARROW) ball.velocity.x += speed;
-    if (keyCode === UP_ARROW) ball.velocity.y -= speed;
-    if (keyCode === DOWN_ARROW) ball.velocity.y += speed;
-}
-
-function windowResized() {
-    resizeCanvas(windowWidth, windowHeight);
-    resetGame();
 }
 
 function resetGame() {
-    ball.x = width / 2;
-    ball.y = height - 50; // Start at the bottom of the screen
-    ball.velocity = { x: 0, y: 0 };
-    score = 0; // Reset score
+    ball = { x: width / 2, y: height - 50, radius: 20, velocity: { x: 0, y: 0 } };
+    shapes = [];
+    shapeCount = 10;
+    score = 0;
 
-    // Recreate shapes without overlapping
-    shapes.length = 0;
+    // Generate shapes
     for (let i = 0; i < shapeCount; i++) {
-        let newShape;
-        let attempts = 0; // Limit the number of attempts to avoid infinite loops
-
-        do {
-            const size = random(ball.radius * 2, ball.radius * 10); // Size between 1x and 5x the ball
-            newShape = {
-                x: random(size / 2, width - size / 2),
-                y: random(size / 2, height - size / 2),
-                size: size,
-                type: random(['circle', 'rectangle', 'triangle']), // Random shape type
-                color: color(random(255), random(255), random(255)), // Static random color
-            };
-            attempts++;
-        } while (isOverlapping(newShape) && attempts < 100);
-
-        shapes.push(newShape);
+        const size = random(ball.radius * 2, ball.radius * 10); // Size between 1x and 5x the ball
+        shapes.push({
+            x: random(size / 2, width - size / 2),
+            y: random(size / 2, height - size / 2),
+            size: size,
+            type: random(["circle", "rectangle", "triangle"]),
+            color: color(random(255), random(255), random(255)),
+        });
     }
 
-    // Place the note in a safe position
-    positionNote();
-}
-
-function isOverlapping(newShape) {
-    for (let shape of shapes) {
-        const distance = dist(newShape.x, newShape.y, shape.x, shape.y);
-        if (distance < (newShape.size + shape.size) / 2) {
-            return true; // Overlapping detected
-        }
-    }
-    return false; // No overlap
+    document.getElementById("score-display").textContent = "Score: 0";
+    document.getElementById("timer-display").textContent = "Time: 60s";
 }
 
 function isCollidingWithShape(ball, shape) {
-    if (shape.type === 'circle') {
-        const distance = dist(ball.x, ball.y, shape.x, shape.y);
-        return distance < ball.radius + shape.size / 2;
-    } else if (shape.type === 'rectangle') {
-        return (
-            ball.x + ball.radius > shape.x &&
-            ball.x - ball.radius < shape.x + shape.size &&
-            ball.y + ball.radius > shape.y &&
-            ball.y - ball.radius < shape.y + shape.size
-        );
-    } else if (shape.type === 'triangle') {
-        return (
-            ball.x + ball.radius > shape.x - shape.size / 2 &&
-            ball.x - ball.radius < shape.x + shape.size / 2 &&
-            ball.y + ball.radius > shape.y - shape.size / 2 &&
-            ball.y - ball.radius < shape.y + shape.size / 2
-        );
-    }
-    return false;
+    const distance = dist(ball.x, ball.y, shape.x, shape.y);
+    return distance < ball.radius + shape.size / 2;
 }
 
 function handleShapeCollision(ball, shape) {
-    const boost = 3; // Speed boost factor upon collision
-    if (shape.type === 'circle') {
-        const angle = atan2(ball.y - shape.y, ball.x - shape.x);
-        ball.velocity.x = cos(angle) * ball.velocity.x * -boost;
-        ball.velocity.y = sin(angle) * ball.velocity.y * -boost;
-    } else {
-        const dx = ball.x - (shape.x + shape.size / 2);
-        const dy = ball.y - (shape.y + shape.size / 2);
-
-        if (abs(dx) > abs(dy)) {
-            ball.velocity.x *= -boost;
-        } else {
-            ball.velocity.y *= -boost;
-        }
-    }
+    ball.velocity.x *= -1; // Reverse direction on collision
+    ball.velocity.y *= -1;
 }
 
 function calculateScore(shape) {
-    // Smaller shapes give 100x more points; larger shapes give fewer points
-    return Math.round(10000 / shape.size);
-}
-
-function displayScore() {
-    fill(0);
-    textSize(24);
-    textAlign(RIGHT, TOP);
-    text(`Score: ${score}`, width - 10, 10);
-}
-
-function drawNote() {
-    fill(0);
-    textSize(20);
-    textAlign(LEFT, BOTTOM);
-    text("Use the arrows to move the ball", notePosition.x, notePosition.y);
-}
-
-function positionNote() {
-    let attempts = 0;
-    do {
-        notePosition.x = random(10, width - 200); // Avoid the edges
-        notePosition.y = random(height - 100, height - 10); // Bottom of the screen
-        attempts++;
-    } while (isOverlappingWithShapes(notePosition.x, notePosition.y) && attempts < 100);
-}
-
-function isOverlappingWithShapes(x, y) {
-    for (let shape of shapes) {
-        const distance = dist(x, y, shape.x, shape.y);
-        if (distance < shape.size / 2 + 50) return true; // Avoid overlap with shapes
-    }
-    return false;
+    return Math.round(10000 / shape.size); // Smaller shapes give higher scores
 }
