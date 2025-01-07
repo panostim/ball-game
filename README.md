@@ -7,7 +7,7 @@ https://js-ball-game.vercel.app/
 
 Use the arrow keys to move the ball.
 
-The application is designed for large monitors and is not mobile friendly.
+The application is designed for large monitors and currently is not mobile friendly.
 
 Additional features to be considered:
 - the game ends after 60 seconds
@@ -18,3 +18,4 @@ Additional features to be considered:
 - there is a leaderboard for each level
 - the data persist in a postgres db
 - the application is responsive and has the same difficulty across devices
+- for mobile devices users can move the ball by swiping to any direction
