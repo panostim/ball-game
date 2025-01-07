@@ -1,3 +1,5 @@
+![Screenshot 2025-01-07 at 4 03 04 PM](https://github.com/user-attachments/assets/6e5375f4-31f1-4a37-a41b-bcf780b15c94)
+
 # ball-bounce-game
 
 A ball bounce application using the p5 JS library inspired by Pinball.
