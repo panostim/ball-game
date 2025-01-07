@@ -172,37 +172,6 @@ function handleShapeCollision(ball, shape) {
 }
 
 function calculateScore(shape) {
-    // Smaller shapes give 100x more points; larger shapes give fewer points
-    return Math.round(10000 / shape.size);
-}
-
-function displayScore() {
-    fill(0);
-    textSize(24);
-    textAlign(RIGHT, TOP);
-    text(`Score: ${score}`, width - 10, 10);
-}
-
-function drawNote() {
-    fill(0);
-    textSize(20);
-    textAlign(LEFT, BOTTOM);
-    text("Use the arrows to move the ball", notePosition.x, notePosition.y);
-}
-
-function positionNote() {
-    let attempts = 0;
-    do {
-        notePosition.x = random(10, width - 200); // Avoid the edges
-        notePosition.y = random(height - 100, height - 10); // Bottom of the screen
-        attempts++;
-    } while (isOverlappingWithShapes(notePosition.x, notePosition.y) && attempts < 100);
-}
-
-function isOverlappingWithShapes(x, y) {
-    for (let shape of shapes) {
-        const distance = dist(x, y, shape.x, shape.y);
-        if (distance < shape.size / 2 + 50) return true; // Avoid overlap with shapes
-    }
-    return false;
-}
+    // Smaller shapes give 100x more
+::contentReference[oaicite:0]{index=0}
+ 
