@@ -3,32 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ball Game</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="sketch.js" defer></script>
+    <title>Ball Movement Game</title>
+    <script src="p5.min.js"></script>
+    <script src="sketch.js"></script>
 </head>
 <body>
-    <div id="landing-page" class="visible">
-        <h1>Welcome to Ball Bounce</h1>
-        <form id="name-form">
-            <label for="nickname">Enter your name or nickname:</label>
-            <input type="text" id="nickname" required>
-            <button type="submit">Start Game</button>
-        </form>
-    </div>
-
-    <div id="game-container" class="hidden">
-        <div id="score-container">
-            <span id="score-display">Score: 0</span>
-            <span id="timer-display">Time: 60s</span>
-        </div>
-        <script src="sketch.js"></script>
-    </div>
-
-    <div id="leaderboard-container" class="hidden">
-        <h1>Leaderboard</h1>
-        <ul id="leaderboard"></ul>
-        <button id="restart-btn">Play Again</button>
-    </div>
 </body>
 </html>
