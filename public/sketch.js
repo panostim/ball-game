@@ -70,8 +70,8 @@ function mousePressed() {
         if (distance < shape.size / 2) {
             // Apply a large force to the ball
             const angle = atan2(mouseY - ball.y, mouseX - ball.x); // Direction to ball
-            ball.velocity.x += cos(angle) * 50; // Strong push horizontally
-            ball.velocity.y += sin(angle) * 50; // Strong push vertically
+            ball.velocity.x += cos(angle) * 5; // Strong push horizontally
+            ball.velocity.y += sin(angle) * 5; // Strong push vertically
         }
     }
 }
@@ -154,7 +154,7 @@ function isCollidingWithShape(ball, shape) {
 }
 
 function handleShapeCollision(ball, shape) {
-    const boost = 3; // Speed boost factor upon collision
+    const boost = 2; // Speed boost factor upon collision
     if (shape.type === 'circle') {
         const angle = atan2(ball.y - shape.y, ball.x - shape.x);
         ball.velocity.x = cos(angle) * ball.velocity.x * -boost;
